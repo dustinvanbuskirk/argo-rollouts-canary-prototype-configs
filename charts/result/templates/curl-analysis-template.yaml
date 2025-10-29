@@ -9,9 +9,7 @@ spec:
   - name: service-name
     value: {{ include "result.fullname" . }}-preview
   - name: namespace
-    valueFrom:
-      fieldRef:
-        fieldPath: metadata.namespace
+    value: {{ .Release.Namespace }}
   metrics:
   - name: curl-health-check
     initialDelay: 10s

@@ -32,6 +32,8 @@ spec:
         args:
         - name: service-name
           value: {{ .Values.rollout.strategy.canary.canaryService }}
+        - name: namespace
+          value: {{ .Release.Namespace }}
       {{- end }}
       steps:
       {{- range .Values.rollout.strategy.canary.steps }}
@@ -57,6 +59,8 @@ spec:
           args:
           - name: service-name
             value: {{ $.Values.rollout.strategy.canary.canaryService }}
+          - name: namespace
+            value: {{ $.Release.Namespace }}
       {{- end }}
       {{- end }}
       {{- end }}
