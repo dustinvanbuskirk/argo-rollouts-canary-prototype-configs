@@ -4,10 +4,10 @@
 replicaCount: 5
 
 image:
-  repository: codedev.jfrog.io/poc-demo-1-docker-local/cf-workshop/cf-result
+  repository: dockersamples/examplevotingapp_result
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "wshp-1.0.0"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -82,9 +82,9 @@ rollout:
   
   strategy:
     canary:
-      # Services
-      stableService: result-stable
-      canaryService: result-preview
+      # Services - using single root service with Istio subsets
+      stableService: result
+      canaryService: result
       
       # Analysis configuration
       analysis:
@@ -99,6 +99,10 @@ rollout:
           virtualServiceName: result-virtualservice
           virtualServiceRoutes:
             - stable  # Must match route name in VirtualService
+          # DestinationRule configuration for subset-based routing
+          destinationRuleName: result-destination-rule
+          canarySubsetName: canary
+          stableSubsetName: stable
       
       # Canary deployment steps
       # Step 1: Deploy canary pods (20% of replicas) with 0% traffic for analysis

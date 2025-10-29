@@ -7,7 +7,7 @@ metadata:
     {{- include "result.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
-  revisionHistoryLimit: 2
+  revisionHistoryLimit: {{ .Values.rollout.revisionHistoryLimit | default 2 }}
   selector:
     matchLabels:
       {{- include "result.selectorLabels" . | nindent 6 }}
@@ -24,6 +24,10 @@ spec:
             {{- range .Values.rollout.strategy.canary.trafficRouting.istio.virtualServiceRoutes }}
             - {{ . }}
             {{- end }}
+          destinationRule:
+            name: {{ .Values.rollout.strategy.canary.trafficRouting.istio.destinationRuleName }}
+            canarySubsetName: {{ .Values.rollout.strategy.canary.trafficRouting.istio.canarySubsetName }}
+            stableSubsetName: {{ .Values.rollout.strategy.canary.trafficRouting.istio.stableSubsetName }}
       {{- end }}
       {{- if .Values.rollout.strategy.canary.analysis.enabled }}
       analysis:
@@ -34,6 +38,12 @@ spec:
           value: {{ .Values.rollout.strategy.canary.canaryService }}
         - name: namespace
           value: {{ .Release.Namespace }}
+        {{- if .Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit }}
+        successfulRunHistoryLimit: {{ .Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit }}
+        {{- end }}
+        {{- if .Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit }}
+        unsuccessfulRunHistoryLimit: {{ .Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit }}
+        {{- end }}
       {{- end }}
       steps:
       {{- range .Values.rollout.strategy.canary.steps }}
