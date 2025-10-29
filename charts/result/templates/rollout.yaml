@@ -40,11 +40,11 @@ spec:
       {{- end }}
       {{- if hasKey . "pause" }}
       - pause:
-          {{- if .pause }}
-          {{- if .pause.duration }}
+        {{- if .pause }}
+        {{- if hasKey .pause "duration" }}
           duration: {{ .pause.duration }}
-          {{- end }}
-          {{- end }}
+        {{- end }}
+        {{- end }}
       {{- end }}
       {{- if hasKey . "analysis" }}
       {{- if .analysis }}
