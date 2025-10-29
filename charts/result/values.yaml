@@ -46,9 +46,6 @@ gateway:
   name: result-gateway
   hosts:
     - "canary-demo.sales-dev.codefresh.io"
-  tls:
-    enabled: true
-    credentialName: result-tls-cert
 
 # Istio VirtualService configuration
 virtualService:
