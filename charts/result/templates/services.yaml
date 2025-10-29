@@ -1,0 +1,56 @@
+---
+# Stable Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "result.fullname" . }}-stable
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
+    service: stable
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "result.selectorLabels" . | nindent 4 }}
+
+---
+# Preview/Canary Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "result.fullname" . }}-preview
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
+    service: preview
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "result.selectorLabels" . | nindent 4 }}
+
+---
+# Root Service (for Argo Rollouts compatibility)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "result.fullname" . }}
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
+    service: root
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "result.selectorLabels" . | nindent 4 }}

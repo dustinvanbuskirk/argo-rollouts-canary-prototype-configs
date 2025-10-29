@@ -1,0 +1,27 @@
+{{- if .Values.destinationRule.enabled }}
+---
+# DestinationRule for Stable Service
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ include "result.fullname" . }}-stable-destination-rule
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
+spec:
+  host: {{ include "result.fullname" . }}-stable
+  trafficPolicy:
+    {{- toYaml .Values.destinationRule.trafficPolicy | nindent 4 }}
+
+---
+# DestinationRule for Preview Service
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ include "result.fullname" . }}-preview-destination-rule
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
+spec:
+  host: {{ include "result.fullname" . }}-preview
+  trafficPolicy:
+    {{- toYaml .Values.destinationRule.trafficPolicy | nindent 4 }}
+{{- end }}

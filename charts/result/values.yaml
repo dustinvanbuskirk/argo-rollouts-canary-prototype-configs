@@ -1,0 +1,167 @@
+# Default values for result chart
+# This is a YAML-formatted file.
+
+replicaCount: 5
+
+image:
+  repository: dockersamples/examplevotingapp_result
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+# Istio Gateway configuration
+gateway:
+  enabled: true
+  name: result-gateway
+  hosts:
+    - "canary-demo.sales-dev.codefresh.io"
+  tls:
+    enabled: true
+    credentialName: result-tls-cert
+
+# Istio VirtualService configuration
+virtualService:
+  enabled: true
+  name: result-virtualservice
+  # Routing mode: "argo-managed" or "static-preview"
+  # - argo-managed: Argo Rollouts manages traffic splitting progressively
+  # - static-preview: Users without Canary header always go to preview
+  routingMode: "argo-managed"
+  hosts:
+    - "canary-demo.sales-dev.codefresh.io"
+
+# Istio DestinationRule configuration
+destinationRule:
+  enabled: true
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 50
+        http2MaxRequests: 100
+    outlierDetection:
+      consecutiveErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+
+# Argo Rollouts configuration
+rollout:
+  enabled: true
+  strategy:
+    canary:
+      # Services
+      stableService: result-stable
+      canaryService: result-preview
+      
+      # Analysis configuration
+      analysis:
+        enabled: true
+      
+      # Traffic routing via Istio
+      trafficRouting:
+        enabled: true
+        istio:
+          virtualServiceName: result-virtualservice
+          virtualServiceRoutes:
+            - primary
+      
+      # Canary deployment steps
+      # Step 1: Run analysis with 0% traffic before routing to canary
+      # Steps 2-5: Gradually increase traffic to 5%, 20%, 50%, 100%
+      steps:
+        # Step 1: Analysis with 0% traffic to canary
+        - setWeight: 0
+        - analysis: true
+        
+        # Step 2: Route 5% traffic to canary
+        - setWeight: 5
+        - pause:
+            duration: 2m
+        
+        # Step 3: Route 20% traffic to canary
+        - setWeight: 20
+        - pause:
+            duration: 2m
+        
+        # Step 4: Route 50% traffic to canary
+        - setWeight: 50
+        - pause:
+            duration: 2m
+        
+        # Step 5: Route 100% traffic to canary
+        - setWeight: 100
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+# Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  successThreshold: 1
+  failureThreshold: 3
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Environment variables
+env:
+  - name: PORT
+    value: "80"

@@ -1,0 +1,69 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "result.fullname" . }}-curl-analysis
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
+spec:
+  args:
+  - name: service-name
+    value: {{ include "result.fullname" . }}-preview
+  - name: namespace
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
+  metrics:
+  - name: curl-health-check
+    initialDelay: 10s
+    interval: 20s
+    count: 3
+    successCondition: result == "200"
+    failureLimit: 2
+    provider:
+      job:
+        spec:
+          backoffLimit: 1
+          template:
+            spec:
+              restartPolicy: Never
+              containers:
+              - name: curl
+                image: curlimages/curl:8.5.0
+                command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  echo "Testing preview service: {{`{{args.service-name}}`}}.{{`{{args.namespace}}`}}.svc.cluster.local"
+                  
+                  # Perform health check with retries
+                  max_retries=3
+                  retry_count=0
+                  
+                  while [ $retry_count -lt $max_retries ]; do
+                    echo "Attempt $((retry_count + 1)) of $max_retries"
+                    
+                    # Perform curl request and capture HTTP status code
+                    status_code=$(curl -s -o /dev/null -w "%{http_code}" \
+                      --connect-timeout 5 \
+                      --max-time 10 \
+                      http://{{`{{args.service-name}}`}}.{{`{{args.namespace}}`}}.svc.cluster.local/)
+                    
+                    echo "HTTP Status Code: $status_code"
+                    
+                    if [ "$status_code" = "200" ]; then
+                      echo "Success! Service is healthy."
+                      echo "$status_code"
+                      exit 0
+                    fi
+                    
+                    retry_count=$((retry_count + 1))
+                    if [ $retry_count -lt $max_retries ]; then
+                      echo "Retrying in 5 seconds..."
+                      sleep 5
+                    fi
+                  done
+                  
+                  echo "Failed after $max_retries attempts"
+                  echo "$status_code"
+                  exit 1
