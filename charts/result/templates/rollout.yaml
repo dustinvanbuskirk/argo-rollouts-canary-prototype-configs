@@ -38,13 +38,16 @@ spec:
       {{- if hasKey . "setWeight" }}
       - setWeight: {{ .setWeight }}
       {{- end }}
+      {{- if hasKey . "manualPause" }}
+      {{- if .manualPause }}
+      - pause: {}
+      {{- end }}
+      {{- end }}
       {{- if hasKey . "pause" }}
+      {{- if .pause }}
       - pause:
-        {{- if .pause }}
-        {{- if hasKey .pause "duration" }}
           duration: {{ .pause.duration }}
-        {{- end }}
-        {{- end }}
+      {{- end }}
       {{- end }}
       {{- if hasKey . "analysis" }}
       {{- if .analysis }}

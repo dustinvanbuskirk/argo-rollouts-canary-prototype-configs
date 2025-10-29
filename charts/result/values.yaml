@@ -7,7 +7,7 @@ image:
   repository: dockersamples/examplevotingapp_result
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "before"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -101,14 +101,15 @@ rollout:
       
       # Canary deployment steps
       # Step 1: Run analysis with 0% traffic before routing to canary
-      # Steps 2-5: Gradually increase traffic to 5%, 20%, 50%, 100%
+      # Steps 2-6: Manual gate, then gradually increase traffic
       steps:
         # Step 1: Analysis with 0% traffic to canary
         - setWeight: 0
         - analysis: true
         
         # Step 2: Manual approval required before routing any traffic
-        - pause: {}  # Infinite pause - requires manual promotion
+        # Using 'manualPause: true' instead of empty pause object
+        - manualPause: true
         
         # Step 3: Route 5% traffic to canary
         - setWeight: 5
