@@ -4,10 +4,10 @@
 replicaCount: 5
 
 image:
-  repository: dockersamples/examplevotingapp_result
+  repository: codedev.jfrog.io/poc-demo-1-docker-local/cf-workshop/cf-result
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "wshp-1.0.0"
 
 imagePullSecrets: []
 nameOverride: ""
