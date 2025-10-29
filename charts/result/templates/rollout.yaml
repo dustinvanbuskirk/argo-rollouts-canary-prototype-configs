@@ -40,6 +40,10 @@ spec:
       {{- if hasKey . "setWeight" }}
       - setWeight: {{ .setWeight }}
       {{- end }}
+      {{- if hasKey . "setCanaryScale" }}
+      - setCanaryScale:
+          weight: {{ .setCanaryScale.weight }}
+      {{- end }}
       {{- if hasKey . "manualPause" }}
       {{- if .manualPause }}
       - pause: {}

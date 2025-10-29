@@ -100,11 +100,14 @@ rollout:
             - primary
       
       # Canary deployment steps
-      # Step 1: Run analysis with 0% traffic before routing to canary
-      # Steps 2-6: Manual gate, then gradually increase traffic
+      # Step 1: Deploy canary pods (20% of replicas) with 0% traffic for analysis
+      # Step 2: Manual gate after analysis passes
+      # Steps 3-6: Gradually increase traffic to 5%, 20%, 50%, 100%
       steps:
-        # Step 1: Analysis with 0% traffic to canary
+        # Step 1: Deploy canary pods but send 0% traffic - for analysis
         - setWeight: 0
+        - setCanaryScale:
+            weight: 20  # Deploy 20% of pods as canary (e.g., 1 pod out of 5)
         - analysis: true
         
         # Step 2: Manual approval required before routing any traffic
@@ -169,3 +172,11 @@ affinity: {}
 env:
   - name: PORT
     value: "80"
+  - name: POSTGRES_USER
+    value: "postgres"
+  - name: POSTGRES_PASSWORD
+    value: "postgres"
+  - name: POSTGRES_HOST
+    value: "db"
+  - name: POSTGRES_PORT
+    value: "5432"
