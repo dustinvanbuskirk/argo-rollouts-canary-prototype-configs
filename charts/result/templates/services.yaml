@@ -1,5 +1,7 @@
 ---
 # Stable Service
+# Note: Argo Rollouts automatically manages the selector for stable service
+# It adds 'rollouts-pod-template-hash: <stable-hash>' selector dynamically
 apiVersion: v1
 kind: Service
 metadata:
@@ -16,9 +18,12 @@ spec:
       name: http
   selector:
     {{- include "result.selectorLabels" . | nindent 4 }}
+    # Argo Rollouts will dynamically add: rollouts-pod-template-hash: <stable-hash>
 
 ---
 # Preview/Canary Service
+# Note: Argo Rollouts automatically manages the selector for canary service
+# It adds 'rollouts-pod-template-hash: <canary-hash>' selector dynamically
 apiVersion: v1
 kind: Service
 metadata:
@@ -35,9 +40,11 @@ spec:
       name: http
   selector:
     {{- include "result.selectorLabels" . | nindent 4 }}
+    # Argo Rollouts will dynamically add: rollouts-pod-template-hash: <canary-hash>
 
 ---
 # Root Service (for Argo Rollouts compatibility)
+# This service matches ALL pods (both stable and canary)
 apiVersion: v1
 kind: Service
 metadata:
