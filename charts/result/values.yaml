@@ -7,7 +7,7 @@ image:
   repository: dockersamples/examplevotingapp_result
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "before"
+  tag: "after"
 
 imagePullSecrets: []
 nameOverride: ""
