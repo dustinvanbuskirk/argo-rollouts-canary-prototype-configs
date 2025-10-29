@@ -25,16 +25,36 @@ spec:
             - {{ . }}
             {{- end }}
       {{- end }}
+      {{- if .Values.rollout.strategy.canary.analysis.enabled }}
+      analysis:
+        templates:
+        - templateName: {{ include "result.fullname" . }}-curl-analysis
+        args:
+        - name: service-name
+          value: {{ .Values.rollout.strategy.canary.canaryService }}
+      {{- end }}
       steps:
       {{- range .Values.rollout.strategy.canary.steps }}
-      {{- if .setWeight }}
+      {{- if hasKey . "setWeight" }}
       - setWeight: {{ .setWeight }}
       {{- end }}
-      {{- if .pause }}
+      {{- if hasKey . "pause" }}
       - pause:
+          {{- if .pause }}
           {{- if .pause.duration }}
           duration: {{ .pause.duration }}
           {{- end }}
+          {{- end }}
+      {{- end }}
+      {{- if hasKey . "analysis" }}
+      {{- if .analysis }}
+      - analysis:
+          templates:
+          - templateName: {{ include "result.fullname" $ }}-curl-analysis
+          args:
+          - name: service-name
+            value: {{ $.Values.rollout.strategy.canary.canaryService }}
+      {{- end }}
       {{- end }}
       {{- end }}
   template:
