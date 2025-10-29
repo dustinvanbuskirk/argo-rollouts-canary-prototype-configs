@@ -7,7 +7,7 @@ image:
   repository: codedev.jfrog.io/poc-demo-1-docker-local/cf-workshop/cf-result
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "wshp-1.0.1"
+  tag: "wshp-1.0.0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -78,6 +78,8 @@ destinationRule:
 # Argo Rollouts configuration
 rollout:
   enabled: true
+  revisionHistoryLimit: 2  # Keep max 2 ReplicaSets in history
+  
   strategy:
     canary:
       # Services
@@ -87,6 +89,8 @@ rollout:
       # Analysis configuration
       analysis:
         enabled: true
+        successfulRunHistoryLimit: 2   # Keep max 2 successful AnalysisRuns
+        unsuccessfulRunHistoryLimit: 2  # Keep max 2 failed AnalysisRuns
       
       # Traffic routing via Istio
       trafficRouting:
@@ -94,7 +98,7 @@ rollout:
         istio:
           virtualServiceName: result-virtualservice
           virtualServiceRoutes:
-            - primary
+            - stable  # Must match route name in VirtualService
       
       # Canary deployment steps
       # Step 1: Deploy canary pods (20% of replicas) with 0% traffic for analysis
