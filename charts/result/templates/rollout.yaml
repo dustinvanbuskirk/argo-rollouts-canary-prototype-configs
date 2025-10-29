@@ -33,10 +33,6 @@ spec:
             {{- range .Values.rollout.strategy.canary.trafficRouting.istio.virtualServiceRoutes }}
             - {{ . }}
             {{- end }}
-          destinationRule:
-            name: {{ .Values.rollout.strategy.canary.trafficRouting.istio.destinationRuleName }}
-            canarySubsetName: {{ .Values.rollout.strategy.canary.trafficRouting.istio.canarySubsetName }}
-            stableSubsetName: {{ .Values.rollout.strategy.canary.trafficRouting.istio.stableSubsetName }}
       {{- end }}
       {{- if .Values.rollout.strategy.canary.analysis.enabled }}
       analysis:

@@ -82,9 +82,9 @@ rollout:
   
   strategy:
     canary:
-      # Services - using single root service with Istio subsets
-      stableService: result
-      canaryService: result
+      # Services - separate services required by Argo Rollouts
+      stableService: result-stable
+      canaryService: result-preview
       
       # Analysis configuration
       analysis:
@@ -99,10 +99,6 @@ rollout:
           virtualServiceName: result-virtualservice
           virtualServiceRoutes:
             - stable  # Must match route name in VirtualService
-          # DestinationRule configuration for subset-based routing
-          destinationRuleName: result-destination-rule
-          canarySubsetName: canary
-          stableSubsetName: stable
       
       # Canary deployment steps
       # Step 1: Deploy canary pods (20% of replicas) with 0% traffic for analysis

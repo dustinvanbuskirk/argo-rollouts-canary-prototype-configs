@@ -1,13 +1,52 @@
 ---
-# Root Service - Routes to ALL pods (both stable and canary)
-# When using Istio traffic routing, this is the primary service
-# Istio DestinationRule subsets handle routing to specific pod versions
+# Stable Service - Managed by Argo Rollouts with pod hash selector
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "result.fullname" . }}-stable
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
+    service: stable
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "result.selectorLabels" . | nindent 4 }}
+    # Argo Rollouts manages this service and will add pod hash selector
+
+---
+# Preview/Canary Service - Managed by Argo Rollouts with pod hash selector
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "result.fullname" . }}-preview
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
+    service: preview
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "result.selectorLabels" . | nindent 4 }}
+    # Argo Rollouts manages this service and will add pod hash selector
+
+---
+# Root Service (for general access)
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "result.fullname" . }}
   labels:
     {{- include "result.labels" . | nindent 4 }}
+    service: root
 spec:
   type: {{ .Values.service.type }}
   ports:
