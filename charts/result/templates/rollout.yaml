@@ -8,11 +8,14 @@ metadata:
 spec:
   replicas: {{ .Values.replicaCount }}
   revisionHistoryLimit: {{ .Values.rollout.revisionHistoryLimit | default 2 }}
-  {{- if .Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit }}
-  successfulRunHistoryLimit: {{ .Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit }}
-  {{- end }}
-  {{- if .Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit }}
-  unsuccessfulRunHistoryLimit: {{ .Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit }}
+  {{- if or (.Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit) (.Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit) }}
+  analysis:
+    {{- if .Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit }}
+    successfulRunHistoryLimit: {{ .Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit }}
+    {{- end }}
+    {{- if .Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit }}
+    unsuccessfulRunHistoryLimit: {{ .Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit }}
+    {{- end }}
   {{- end }}
   selector:
     matchLabels:
