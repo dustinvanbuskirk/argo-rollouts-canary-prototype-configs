@@ -110,6 +110,7 @@ rollout:
         - setWeight: 0
         - setCanaryScale:
             weight: 20  # Deploy 20% of pods as canary (e.g., 1 pod out of 5)
+        - analysis: true
 
         # Step 2: Manual approval required before routing any traffic
         # Using 'manualPause: true' instead of empty pause object
@@ -124,6 +125,7 @@ rollout:
         - setWeight: 20
         - setCanaryScale:
             weight: 50
+        - analysis: true
         - pause:
             duration: 2m
 
@@ -131,11 +133,15 @@ rollout:
         - setWeight: 50
         - setCanaryScale:
             weight: 100
+        - analysis: true
         - pause:
             duration: 2m
 
         # Step 6: Route 100% traffic to canary
         - setWeight: 100
+        - pause:
+            duration: 2m
+        - analysis: true
 
 resources:
   requests:

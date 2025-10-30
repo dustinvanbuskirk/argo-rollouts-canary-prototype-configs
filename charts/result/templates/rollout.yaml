@@ -43,6 +43,7 @@ spec:
       analysis:
         templates:
         - templateName: {{ include "result.fullname" . }}-curl-analysis
+        - templateName: {{ include "result.fullname" $ }}-datadog-pod-restart
         args:
         - name: service-name
           value: {{ .Values.rollout.strategy.canary.canaryService }}
