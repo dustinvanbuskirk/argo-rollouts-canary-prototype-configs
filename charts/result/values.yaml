@@ -110,9 +110,6 @@ rollout:
         - setWeight: 0
         - setCanaryScale:
             weight: 20  # Deploy 20% of pods as canary (e.g., 1 pod out of 5)
-        - analysis:
-            templates:
-              - templateName: curl-analysis
 
         # Step 2: Manual approval required before routing any traffic
         # Using 'manualPause: true' instead of empty pause object
