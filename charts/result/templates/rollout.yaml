@@ -43,7 +43,7 @@ spec:
       analysis:
         templates:
         - templateName: {{ include "result.fullname" . }}-curl-analysis
-        - templateName: {{ include "result.fullname" $ }}-datadog-pod-restart
+        - templateName: {{ include "result.fullname" $ }}-datadog-404
       {{- end }}
       steps:
       {{- range .Values.rollout.strategy.canary.steps }}
@@ -70,7 +70,7 @@ spec:
       - analysis:
           templates:
           - templateName: {{ include "result.fullname" $ }}-curl-analysis
-          - templateName: {{ include "result.fullname" $ }}-datadog-pod-restart
+          - templateName: {{ include "result.fullname" $ }}-datadog-404
       {{- end }}
       {{- end }}
       {{- end }}
