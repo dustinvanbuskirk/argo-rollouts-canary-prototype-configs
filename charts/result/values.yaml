@@ -78,7 +78,7 @@ destinationRule:
 # Argo Rollouts configuration
 rollout:
   enabled: true
-  revisionHistoryLimit: 2  # Keep max 2 ReplicaSets in history
+  revisionHistoryLimit: 1  # Keep max 1 ReplicaSets in history
   
   strategy:
     canary:
@@ -89,8 +89,8 @@ rollout:
       # Analysis configuration
       analysis:
         enabled: true
-        successfulRunHistoryLimit: 2   # Keep max 2 successful AnalysisRuns
-        unsuccessfulRunHistoryLimit: 2  # Keep max 2 failed AnalysisRuns
+        successfulRunHistoryLimit: 1   # Keep max 1 successful AnalysisRuns
+        unsuccessfulRunHistoryLimit: 1  # Keep max 1 failed AnalysisRuns
       
       # Traffic routing via Istio - REQUIRED for setCanaryScale
       # Enables 0% traffic to canary while having pods for testing
