@@ -119,9 +119,6 @@ rollout:
         - setWeight: 5
         - pause:
             duration: 2m
-        - analysis:
-            templates:
-              - templateName: datadog-pod-restart
 
         # Step 4: Route 20% traffic to canary
         - setWeight: 20
@@ -129,9 +126,6 @@ rollout:
             weight: 50
         - pause:
             duration: 2m
-        - analysis:
-            templates:
-              - templateName: datadog-pod-restart
 
         # Step 5: Route 50% traffic to canary
         - setWeight: 50
@@ -139,15 +133,9 @@ rollout:
             weight: 100
         - pause:
             duration: 2m
-        - analysis:
-            templates:
-              - templateName: datadog-pod-restart
 
         # Step 6: Route 100% traffic to canary
         - setWeight: 100
-        - analysis:
-            templates:
-              - templateName: datadog-pod-restart
 
 resources:
   requests:

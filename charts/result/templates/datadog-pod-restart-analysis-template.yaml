@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
-  name: datadog-pod-restart
+  name: {{ include "result.fullname" . }}-datadog-pod-restart
   labels:
     {{- include "result.labels" . | nindent 4 }}
 spec:
