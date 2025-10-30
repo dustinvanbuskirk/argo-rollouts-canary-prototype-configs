@@ -26,4 +26,4 @@ spec:
         datadog:
           apiVersion: v1
           interval: 3m
-          query: "{{ `sum:istio.mesh.request.count{destination_service_name:{{args.service-name}}, response_code:404} by {destination_service}`}}"
+          query: "{{ `sum:istio.mesh.request.count.total{destination_service_name:{{args.service-name}}, response_code:404} by {destination_service}`}}"
