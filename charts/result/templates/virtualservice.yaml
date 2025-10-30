@@ -13,7 +13,7 @@ spec:
   gateways:
   - {{ .Values.gateway.name }}
   http:
-  # Route 1: Users WITH Canary header → Preview service directly (no subset)
+  # Route 1: Users WITH Canary header → Preview service, canary subset
   - name: canary-header-route
     match:
     - headers:
@@ -22,6 +22,7 @@ spec:
     route:
     - destination:
         host: {{ include "result.fullname" . }}-preview
+        subset: canary
         port:
           number: {{ .Values.service.port }}
       weight: 100
@@ -31,16 +32,18 @@ spec:
           x-served-by: "canary"
           x-route-match: "canary-header"
   
-  # Route 2: Stable route - Argo Rollouts manages weights between services (no subsets)
+  # Route 2: Stable route - Argo Rollouts manages weights
   - name: stable
     route:
     - destination:
         host: {{ include "result.fullname" . }}-stable
+        subset: stable
         port:
           number: {{ .Values.service.port }}
       weight: 100  # Argo Rollouts will dynamically adjust this
     - destination:
         host: {{ include "result.fullname" . }}-preview
+        subset: canary
         port:
           number: {{ .Values.service.port }}
       weight: 0    # Argo Rollouts will dynamically adjust this

@@ -1,6 +1,6 @@
 {{- if .Values.destinationRule.enabled }}
 ---
-# DestinationRule for Stable Service
+# DestinationRule for Stable Service with subsets
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
@@ -9,11 +9,17 @@ metadata:
     {{- include "result.labels" . | nindent 4 }}
 spec:
   host: {{ include "result.fullname" . }}-stable
+  subsets:
+  - name: stable
+    labels:
+      app: {{ include "result.name" . }}
+      # Argo Rollouts will dynamically update this during rollouts
+      # rollouts-pod-template-hash: <stable-hash>
   trafficPolicy:
     {{- toYaml .Values.destinationRule.trafficPolicy | nindent 4 }}
 
 ---
-# DestinationRule for Preview Service
+# DestinationRule for Preview Service with subsets
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
@@ -22,6 +28,12 @@ metadata:
     {{- include "result.labels" . | nindent 4 }}
 spec:
   host: {{ include "result.fullname" . }}-preview
+  subsets:
+  - name: canary
+    labels:
+      app: {{ include "result.name" . }}
+      # Argo Rollouts will dynamically update this during rollouts
+      # rollouts-pod-template-hash: <canary-hash>
   trafficPolicy:
     {{- toYaml .Values.destinationRule.trafficPolicy | nindent 4 }}
 {{- end }}
