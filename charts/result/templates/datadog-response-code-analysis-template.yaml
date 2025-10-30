@@ -11,7 +11,7 @@ spec:
       value: {{ include "result.fullname" . }}-preview
     - name: namespace
       value: {{ .Release.Namespace }}
-    - name: response.nitial-delay
+    - name: response.initial-delay
       value: "30s"
     - name: response.max-404s
       value: "1"
@@ -20,7 +20,7 @@ spec:
       initialDelay: "{{ `{{args.response.initial-delay}}` }}"
       interval: 15s
       count: 3
-      failureCondition: default(result, 0) > {{ `{{args.response.404s}}` }}
+      failureCondition: default(result, 0) > {{ `{{args.response.max-404s}}` }}
       failureLimit: 0
       provider:
         datadog:
