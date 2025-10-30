@@ -92,13 +92,11 @@ rollout:
         successfulRunHistoryLimit: 2   # Keep max 2 successful AnalysisRuns
         unsuccessfulRunHistoryLimit: 2  # Keep max 2 failed AnalysisRuns
       
-      # Traffic routing via Istio
+      # Traffic routing via Istio - DISABLED to allow Argo to manage service selectors
+      # The VirtualService still exists and routes traffic, but Argo won't manage weights
+      # Instead, Argo manages traffic by controlling which pods are behind each service
       trafficRouting:
-        enabled: true
-        istio:
-          virtualServiceName: result-virtualservice
-          virtualServiceRoutes:
-            - stable  # Must match route name in VirtualService
+        enabled: false
       
       # Canary deployment steps
       # Step 1: Deploy canary pods (20% of replicas) with 0% traffic for analysis

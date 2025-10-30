@@ -22,18 +22,12 @@ spec:
       {{- include "result.selectorLabels" . | nindent 6 }}
   strategy:
     canary:
-      stableService: {{ .Values.rollout.strategy.canary.stableService }}
+      # Argo Rollouts will manage service selectors by adding rollouts-pod-template-hash
       canaryService: {{ .Values.rollout.strategy.canary.canaryService }}
-      {{- if .Values.rollout.strategy.canary.trafficRouting.enabled }}
-      trafficRouting:
-        istio:
-          virtualService:
-            name: {{ .Values.rollout.strategy.canary.trafficRouting.istio.virtualServiceName }}
-            routes:
-            {{- range .Values.rollout.strategy.canary.trafficRouting.istio.virtualServiceRoutes }}
-            - {{ . }}
-            {{- end }}
-      {{- end }}
+      stableService: {{ .Values.rollout.strategy.canary.stableService }}
+      # Note: NOT using trafficRouting.istio here
+      # This allows Argo to manage service selectors
+      # Istio VirtualService still works, but Argo doesn't manage its weights
       {{- if .Values.rollout.strategy.canary.analysis.enabled }}
       analysis:
         templates:
