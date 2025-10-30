@@ -44,11 +44,6 @@ spec:
         templates:
         - templateName: {{ include "result.fullname" . }}-curl-analysis
         - templateName: {{ include "result.fullname" $ }}-datadog-pod-restart
-        args:
-        - name: service-name
-          value: {{ .Values.rollout.strategy.canary.canaryService }}
-        - name: namespace
-          value: {{ .Release.Namespace }}
       {{- end }}
       steps:
       {{- range .Values.rollout.strategy.canary.steps }}
@@ -76,11 +71,6 @@ spec:
           templates:
           - templateName: {{ include "result.fullname" $ }}-curl-analysis
           - templateName: {{ include "result.fullname" $ }}-datadog-pod-restart
-          args:
-          - name: service-name
-            value: {{ $.Values.rollout.strategy.canary.canaryService }}
-          - name: namespace
-            value: {{ $.Release.Namespace }}
       {{- end }}
       {{- end }}
       {{- end }}

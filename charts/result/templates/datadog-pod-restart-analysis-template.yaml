@@ -7,8 +7,10 @@ metadata:
 spec:
   args:
     # This is set in rollout using the valueFrom: podTemplateHashValue functionality
-    - name: canary-hash
     - name: service-name
+      value: {{ include "result.fullname" . }}-preview
+    - name: namespace
+      value: {{ .Release.Namespace }}
     - name: restarts.initial-delay
       value: "60s"
     - name: restarts.max-restarts
