@@ -4,7 +4,7 @@
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
-  name: {{ include "result.fullname" . }}-stable-destination-rule
+  name: {{ include "result.fullname" . }}-stable
   labels:
     {{- include "result.labels" . | nindent 4 }}
 spec:
@@ -17,7 +17,7 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
-  name: {{ include "result.fullname" . }}-preview-destination-rule
+  name: {{ include "result.fullname" . }}-preview
   labels:
     {{- include "result.labels" . | nindent 4 }}
 spec:
