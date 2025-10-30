@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "result.fullname" . }}-datadog-404
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
+spec:
+  args:
+    # This is set in rollout using the valueFrom: podTemplateHashValue functionality
+    - name: service-name
+      value: {{ include "result.fullname" . }}-preview
+    - name: namespace
+      value: {{ .Release.Namespace }}
+    - name: response.nitial-delay
+      value: "30s"
+    - name: response.max-404s
+      value: "1"
+  metrics:
+    - name: istio.response.404s
+      initialDelay: "{{ `{{args.response.initial-delay}}` }}"
+      interval: 15s
+      count: 3
+      failureCondition: default(result, 0) > {{ `{{args.response.404s}}` }}
+      failureLimit: 0
+      provider:
+        datadog:
+          apiVersion: v1
+          interval: 3m
+          query: "{{ `sum:istio.mesh.request.count{destination_service_name:{{args.service-name}}, response_code:404} by {destination_service}`}}"
