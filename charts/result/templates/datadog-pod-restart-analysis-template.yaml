@@ -27,3 +27,11 @@ spec:
           apiVersion: v1
           interval: 3m
           query: "{{ `max:kubernetes.containers.restarts{kube_service:{{args.service-name}}}` }}"
+          apiKey:
+            secretKeyRef:
+              name: datadog
+              key: api-key
+          appKey:
+            secretKeyRef:
+              name: datadog
+              key: app-key
