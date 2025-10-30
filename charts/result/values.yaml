@@ -110,29 +110,47 @@ rollout:
         - setWeight: 0
         - setCanaryScale:
             weight: 20  # Deploy 20% of pods as canary (e.g., 1 pod out of 5)
-        - analysis: true
-        
+        - analysis:
+            templates:
+              - templateName: curl-analysis
+
         # Step 2: Manual approval required before routing any traffic
         # Using 'manualPause: true' instead of empty pause object
         - manualPause: true
-        
+
         # Step 3: Route 5% traffic to canary
         - setWeight: 5
         - pause:
             duration: 2m
-        
+        - analysis:
+            templates:
+              - templateName: datadog-pod-restart
+
         # Step 4: Route 20% traffic to canary
         - setWeight: 20
+        - setCanaryScale:
+            weight: 50
         - pause:
             duration: 2m
-        
+        - analysis:
+            templates:
+              - templateName: datadog-pod-restart
+
         # Step 5: Route 50% traffic to canary
         - setWeight: 50
+        - setCanaryScale:
+            weight: 100
         - pause:
             duration: 2m
-        
+        - analysis:
+            templates:
+              - templateName: datadog-pod-restart
+
         # Step 6: Route 100% traffic to canary
         - setWeight: 100
+        - analysis:
+            templates:
+              - templateName: datadog-pod-restart
 
 resources:
   requests:

@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
-  name: {{ include "result.fullname" . }}-curl-analysis
+  name: curl-analysis
   labels:
     {{- include "result.labels" . | nindent 4 }}
 spec:
