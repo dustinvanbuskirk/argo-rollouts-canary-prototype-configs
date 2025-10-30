@@ -13,10 +13,10 @@ spec:
   metrics:
   - name: curl-health-check
     initialDelay: 10s
-    interval: 20s
-    count: 3
+    interval: 10s
+    count: 1
     successCondition: result == "200"
-    failureLimit: 2
+    failureLimit: 1
     provider:
       job:
         spec:
