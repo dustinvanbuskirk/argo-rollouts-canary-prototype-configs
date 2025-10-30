@@ -7,7 +7,7 @@ image:
   repository: codedev.jfrog.io/poc-demo-1-docker-local/cf-workshop/cf-result
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "wshp-1.0.2"
+  tag: "wshp-1.0.0"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -91,6 +91,10 @@ rollout:
         enabled: true
         successfulRunHistoryLimit: 2   # Keep max 2 successful AnalysisRuns
         unsuccessfulRunHistoryLimit: 2  # Keep max 2 failed AnalysisRuns
+        # Analysis templates to use
+        templates:
+          - curl    # curl-based health check
+          - datadog # Datadog metrics analysis (restarts, crashes, OOM)
       
       # Traffic routing via Istio - REQUIRED for setCanaryScale
       # Enables 0% traffic to canary while having pods for testing
