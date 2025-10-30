@@ -1,119 +1,133 @@
+{{- if .Values.rollout.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: result
-  namespace: default
+  name: {{ include "result.fullname" . }}
+  labels:
+    {{- include "result.labels" . | nindent 4 }}
 spec:
-  replicas: 5
-  revisionHistoryLimit: 2  # Keep max 2 ReplicaSets in history
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.rollout.revisionHistoryLimit | default 2 }}
+  {{- if or (.Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit) (.Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit) }}
   analysis:
-    successfulRunHistoryLimit: 2   # Keep max 2 successful AnalysisRuns
-    unsuccessfulRunHistoryLimit: 2  # Keep max 2 failed AnalysisRuns
+    {{- if .Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit }}
+    successfulRunHistoryLimit: {{ .Values.rollout.strategy.canary.analysis.successfulRunHistoryLimit }}
+    {{- end }}
+    {{- if .Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit }}
+    unsuccessfulRunHistoryLimit: {{ .Values.rollout.strategy.canary.analysis.unsuccessfulRunHistoryLimit }}
+    {{- end }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "result.selectorLabels" . | nindent 6 }}
   strategy:
     canary:
-      # Reference the stable and preview services
-      stableService: result-stable
-      canaryService: result-preview
-      
-      # Istio traffic routing configuration
+      # Argo Rollouts will manage service selectors by adding rollouts-pod-template-hash
+      canaryService: {{ .Values.rollout.strategy.canary.canaryService }}
+      stableService: {{ .Values.rollout.strategy.canary.stableService }}
+      {{- if .Values.rollout.strategy.canary.trafficRouting.enabled }}
       trafficRouting:
         istio:
           virtualService:
-            name: result-virtualservice    # Reference our Istio VirtualService
+            name: {{ .Values.rollout.strategy.canary.trafficRouting.istio.virtualServiceName }}
             routes:
-            - primary                       # Name of the route in VirtualService to manipulate
+            {{- range .Values.rollout.strategy.canary.trafficRouting.istio.virtualServiceRoutes }}
+            - {{ . }}
+            {{- end }}
           destinationRule:
-            name: result-stable-destination-rule  # Reference our DestinationRule
-            canarySubsetName: preview       # Subset name for canary
-            stableSubsetName: stable        # Subset name for stable
-      
-      # Analysis template for curl health checks
+            name: {{ include "result.fullname" . }}-stable
+            canarySubsetName: canary
+            stableSubsetName: stable
+      {{- end }}
+      {{- if .Values.rollout.strategy.canary.analysis.enabled }}
       analysis:
         templates:
-        - templateName: result-curl-analysis
+        - templateName: {{ include "result.fullname" . }}-curl-analysis
         args:
         - name: service-name
-          value: result
+          value: {{ .Values.rollout.strategy.canary.canaryService }}
         - name: namespace
-          value: voting-app
-        # Note: successfulRunHistoryLimit and unsuccessfulRunHistoryLimit
-        # are at spec.analysis level, not here
-      
-      # Canary deployment steps
-      # Step 1: Run analysis with 0% traffic before routing to canary
-      # Step 2: Manual approval gate before routing any traffic
-      # Steps 3-6: Gradually increase traffic to 5%, 20%, 50%, 100%
+          value: {{ .Release.Namespace }}
+      {{- end }}
       steps:
-      # Step 1: Analysis with 0% traffic to canary
-      - setWeight: 0
+      {{- range .Values.rollout.strategy.canary.steps }}
+      {{- if hasKey . "setWeight" }}
+      - setWeight: {{ .setWeight }}
+      {{- end }}
+      {{- if hasKey . "setCanaryScale" }}
+      - setCanaryScale:
+          weight: {{ .setCanaryScale.weight }}
+      {{- end }}
+      {{- if hasKey . "manualPause" }}
+      {{- if .manualPause }}
+      - pause: {}
+      {{- end }}
+      {{- end }}
+      {{- if hasKey . "pause" }}
+      {{- if .pause }}
+      - pause:
+          duration: {{ .pause.duration }}
+      {{- end }}
+      {{- end }}
+      {{- if hasKey . "analysis" }}
+      {{- if .analysis }}
       - analysis:
           templates:
-          - templateName: result-curl-analysis
+          - templateName: {{ include "result.fullname" $ }}-curl-analysis
           args:
           - name: service-name
-            value: result-preview
-      
-      # Step 2: Manual approval gate - requires promotion before routing traffic
-      - pause: {}
-      
-      # Step 3: Route 5% traffic to canary
-      - setWeight: 5
-      - pause: {duration: 2m}
-      
-      # Step 4: Route 20% traffic to canary
-      - setWeight: 20
-      - pause: {duration: 2m}
-      
-      # Step 5: Route 50% traffic to canary
-      - setWeight: 50
-      - pause: {duration: 2m}
-      
-      # Step 6: Route 100% traffic to canary
-      - setWeight: 100
-  
-  revisionHistoryLimit: 2
-  
-  selector:
-    matchLabels:
-      app: result
-  
+            value: {{ $.Values.rollout.strategy.canary.canaryService }}
+          - name: namespace
+            value: {{ $.Release.Namespace }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        app: result
+        {{- include "result.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "result.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-      - name: result
-        image: dockersamples/examplevotingapp_result:latest  # Update with your image
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
-        - containerPort: 80
-          name: http
+        - name: http
+          containerPort: {{ .Values.service.targetPort }}
           protocol: TCP
+        {{- if .Values.env }}
         env:
-        - name: PORT
-          value: "80"
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 200m
-            memory: 256Mi
+          {{- toYaml .Values.env | nindent 10 }}
+        {{- end }}
         livenessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
+          {{- toYaml .Values.livenessProbe | nindent 10 }}
         readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 3
-          successThreshold: 1
-          failureThreshold: 3
+          {{- toYaml .Values.readinessProbe | nindent 10 }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
