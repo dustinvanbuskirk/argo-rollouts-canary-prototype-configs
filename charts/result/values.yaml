@@ -179,6 +179,6 @@ env:
   - name: POSTGRES_PASSWORD
     value: "postgres"
   - name: POSTGRES_HOST
-    value: "infrastructure-voting-app-postgresql"
+    value: "infrastructure-voting-app-postgresql.voting-app.svc.cluster.local"
   - name: POSTGRES_PORT
     value: "5432"
